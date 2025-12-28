@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nube de Recuerdos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #FEB195, #F67280, #C06C84, #6C5B7B, #355C7D);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-text {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #F67280, #C06C84, #6C5B7B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #355C7D;
+            font-size: 2.8em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            color: #6C5B7B;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            border: 1px solid #F67280;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            color: #355C7D;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        button {
+            background: linear-gradient(45deg, #F67280, #C06C84);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(246, 114, 128, 0.4);
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #C06C84, #6C5B7B);
+            transform: translateY(-2px);
+        }
+
+        input[type="file"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #C06C84;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        #qr-reader {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border: 3px dashed #F67280;
+            border-radius: 15px;
+            margin: 20px auto;
+            display: none;
+            background: #000;
+        }
+
+        #qr-result {
+            text-align: center;
+            font-weight: bold;
+            color: #355C7D;
+            margin: 15px 0;
+        }
+
+        #upload-status, #dedication-status {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #6C5B7B;
+        }
+
+        #album-link {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        #album-link a {
+            color: #355C7D;
+            font-size: 1.2em;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        #album-link a:hover {
+            color: #F67280;
+        }
+    </style>
+
+    <!-- Librería para leer QR -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <!-- jsPDF para dedicatorias -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-text">Nube de Recuerdos ☁</div>
+        <h1>¡Bienvenidos!</h1>
+        <p class="subtitle">Captura y guarda los mejores momentos del evento</p>
+
+        <!-- Sección QR y subida -->
+        <div class="section">
+            <h2>📸 Escanea el QR para compartir fotos y videos</h2>
+            <button onclick="startQRScanner()">Escanear QR</button>
+            <video id="qr-reader" playsinline></video>
+            <canvas id="qr-canvas" style="display:none;"></canvas>
+            <p id="qr-result"></p>
+
+            <div id="share-media" style="display:none;">
+                <input type="file" id="media-upload" accept="image/*,video/*" multiple>
+                <button onclick="uploadToDrive()">Subir a la Nube ☁</button>
+                <p id="upload-status"></p>
+            </div>
+        </div>
+
+        <!-- Sección dedicatorias -->
+        <div class="section">
+            <h2>✍️ Dedica unas palabras al festejado</h2>
+            <textarea id="dedication" rows="6" placeholder="Escribe aquí tu mensaje especial..."></textarea>
+            <button onclick="saveDedication()">Enviar dedicatoria</button>
+            <p id="dedication-status"></p>
+        </div>
+
+        <!-- Enlace al álbum -->
+        <div id="album-link">
+            <a href="https://drive.google.com/drive/folders/1i8KMyO2fVKMoirFZ_u44C6CFesaxwndE" target="_blank">
+                Ver todos los recuerdos en la nube ☁
+            </a>
+        </div>
+    </div>
+
+    <!-- El script completo con subida a Drive y PDF elegante (el mismo de la versión anterior) -->
+    <script>
+        // (Pega aquí el script completo de la última versión que te di, con OAuth o el alternativo si lo prefieres)
+        // Incluye todas las funciones: initGapi, gisLoaded, uploadToDrive, saveDedication (con PDF elegante), escáner QR, etc.
+    </script>
+</body>
+</html>
